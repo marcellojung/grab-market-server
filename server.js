@@ -17,11 +17,12 @@ const port = 8080;
 
 app.use(express.json()); //json 형식의 데이터를 처리할 수 있게 설정하는 코드
 app.use(cors()); //브라우저의 CORS 이슈를 막기 위해 사용하는 코드
+app.use("/uploads", express.static("uploads"));
 
 app.get("/products", async (req, res) => {
   models.Product.findAll({
     order: [["createdAt", "DESC"]], //생겨난 순서대로 내림 차순
-    attributes: ["id", "name", "price", "createdAt", "seller", "imageUrl"], //필요한 정보만 뽑아옴
+    attributes: ["id", "name", "price", "createdAt", "seller", "imageUrl"], //필요한 정보만 뽑아옴g
   })
     .then((result) => {
       console.log("PRODUCTS : ", result);
@@ -31,22 +32,17 @@ app.get("/products", async (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.send("에러 발생");
+      res.status(400).send("에러 발생");
     });
 });
 
 app.post("/products", async (req, res) => {
   const body = req.body; // {articles : [{...}]} 클라이언트가 보낸 json body가 출력됩니다.
-  const { name, description, price, seller } = body;
-  if (!name || !description || !price || !seller) {
-    res.send("모든 필드를 입력해 주세요!");
+  const { name, description, price, seller, imageUrl } = body;
+  if (!name || !description || !price || !seller || !imageUrl) {
+    res.status(400).send("모든 필드를 입력해 주세요!");
   }
-  models.Product.create({
-    name,
-    description,
-    price,
-    seller,
-  })
+  models.Product.create({ description, price, seller, imageUrl, name })
     .then((result) => {
       //생성된 레코드 {url: ..., title, ...}를 반환합니다.
       console.log("상품 생성결과", result);
@@ -54,7 +50,7 @@ app.post("/products", async (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.send("상품 업로드에 문제가 발생했습니다.");
+      res.status(400).send("상품 업로드에 문제가 발생했습니다.");
     });
 });
 
@@ -74,7 +70,7 @@ app.get("/products/:id", (req, res) => {
     })
     .catch((error) => {
       console.error(error);
-      res.send("상품 조회에 에러가 발생했습니다.");
+      res.status(400).send("상품 조회에 에러가 발생했습니다.");
     });
 });
 
