@@ -18,6 +18,11 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(300),
       allowNull: true,
     },
+    soldout: {
+      type: DataTypes.INTEGER(1),
+      allloNull: false,
+      defaultValue: 0,
+    },
     description: {
       type: DataTypes.STRING(300),
       allowNull: false,

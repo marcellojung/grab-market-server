@@ -19,10 +19,34 @@ app.use(express.json()); //json 형식의 데이터를 처리할 수 있게 설�
 app.use(cors()); //브라우저의 CORS 이슈를 막기 위해 사용하는 코드
 app.use("/uploads", express.static("uploads"));
 
+app.get("/banners", (req, res) => {
+  models.Banner.findAll({
+    limit: 2,
+  })
+    .then((result) => {
+      console.log("banner:", result);
+      res.send({
+        banners: result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send("에러가 발생했습니다");
+    });
+});
+
 app.get("/products", async (req, res) => {
   models.Product.findAll({
     order: [["createdAt", "DESC"]], //생겨난 순서대로 내림 차순
-    attributes: ["id", "name", "price", "createdAt", "seller", "imageUrl"], //필요한 정보만 뽑아옴g
+    attributes: [
+      "id",
+      "name",
+      "price",
+      "createdAt",
+      "seller",
+      "imageUrl",
+      "soldout",
+    ], //필요한 정보만 뽑아옴g
   })
     .then((result) => {
       console.log("PRODUCTS : ", result);
@@ -80,6 +104,27 @@ app.post("/image", upload.single("image"), (req, res) => {
   res.send({
     imageUrl: file.path,
   });
+});
+
+app.post("/purchase/:id", (req, res) => {
+  const { id } = req.params;
+  models.Product.update(
+    {
+      soldout: 1,
+    },
+    {
+      where: {
+        id,
+      },
+    }
+  )
+    .then((result) => {
+      res.send({ result: true });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send("에러가 발생했습니다.");
+    });
 });
 
 //세팅한 app을 실행시킨다.
